@@ -8,12 +8,11 @@
 local ZONE_THRESH_PERCENTAGE = 20;
 -- sides get 20% each, mid gets 60%, same vertically
 
--- returns the mouse zone as a string [top/middle/bottom]-[left/middle/right], e.g. "middle-right"
--- TODO: refine: diagonal borders, etc.
-
 local msg = mp.msg
 
 function getMouseZone()
+    -- returns the mouse zone as two strings [top/middle/bottom], [left/middle/right], e.g. "middle", "right"
+
     local screenW, screenH = mp.get_osd_resolution()
     local mouseX, mouseY   = mp.get_mouse_pos()
 
@@ -35,7 +34,7 @@ function main (...)
 
     local fallback = nil
 
-    for i,v in ipairs(arg) do
+    for i, v in ipairs(arg) do
         cmdY = v:match("^([%w%*]+)%-?[%w%*]*:")
         cmdX = v:match("^[%w%*]*%-([%w%*]+)%s*:")
         cmd  = v:match("^[%S]-%s*:%s*(.+)")
