@@ -33,9 +33,9 @@ function main (...)
     local fallback = nil
 
     for i,v in ipairs(arg) do
-        cmdY = v:match("^([%a%*]+)%-?[%a%*]*:")
-        cmdX = v:match("^[%a%*]*%-([%a%*]+)%s*:")
-        cmd  = v:match(":%s*(.+)")
+        cmdY = v:match("^([%w%*]+)%-?[%w%*]*:")
+        cmdX = v:match("^[%w%*]*%-([%w%*]+)%s*:")
+        cmd  = v:match("^[%S]-%s*:%s*(.+)")
         -- msg.debug('cmdY: '..tostring(cmdY))
         -- msg.debug('cmdX: '..tostring(cmdX))
 
