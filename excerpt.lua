@@ -1,3 +1,4 @@
+-- Original from: https://github.com/lvml/mpv-plugin-excerpt/blob/master/excerpt.lua
 -- This script allows to create excerpts of a video that is played,
 -- press "i" to mark the begin of the range to excerpt,
 -- press "o" to mark the end   of the range to excerpt,

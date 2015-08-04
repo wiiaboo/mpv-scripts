@@ -1,3 +1,4 @@
+-- original from https://github.com/mpv-player/mpv/blob/master/player/lua/ytdl_hook.lua
 local utils = require 'mp.utils'
 local msg = require 'mp.msg'
 
