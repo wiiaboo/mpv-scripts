@@ -27,7 +27,7 @@ end
 
 function main (...)
     local arg={...}
-    msg.debug('commands: '..table.concat(arg,', '))
+    msg.debug('commands: \n\t'..table.concat(arg,'\n\t'))
     local keyY, keyX = getMouseZone()
     msg.debug("mouse at: " .. keyY .. '-' .. keyX)
     local fallback = nil
