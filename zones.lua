@@ -57,7 +57,7 @@ function main (...)
         mp.command(fallback)
         return
     else
-        msg.debug("no command assigned for "..key)
+        msg.debug("no command assigned for "..keyY .. '-' .. keyX)
         return
     end
 end
