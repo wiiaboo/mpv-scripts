@@ -1,9 +1,16 @@
---  zones.lua: mpv - script for handling commands depending on where the mouse pointer is at,
---            mostly for mouse wheel handling, by configuring it via input.conf, e.g.:
---  input.conf:
--- # wheel up/down with my mouse
--- MOUSE_BTN3 script_message_to zones commands "default: seek  10" "*-left: add volume  5" "middle-right: add brightness  1"
--- MOUSE_BTN4 script_message_to zones commands "default: seek -10" "*-left: add volume -5" "middle-right: add brightness -1"
+--  zones.lua: mpv script for handling commands depending on where the mouse pointer is at,
+--             mostly for mouse wheel handling, by configuring it via input.conf, e.g.:
+--
+--  Ported from avih's ( https://github.com/avih ) zones.js
+--
+--  Vertical positions can be top, middle, bottom or "*" to represent the whole column.
+--  Horizontal positions can be left, middle, bottom or "*" to represent the whole row.
+--  "default" will be the fallback command to be used if no command is assigned to that area.
+--
+--  input.conf example of use:
+-- # wheel up/down with mouse
+-- MOUSE_BTN3 script_message_to zones commands "middle-right: add brightness  1" "*-left: add volume  5" "default: seek  10"
+-- MOUSE_BTN4 script_message_to zones commands "middle-right: add brightness -1" "*-left: add volume -5"  "default: seek -10"
 
 local ZONE_THRESH_PERCENTAGE = 20;
 -- sides get 20% each, mid gets 60%, same vertically
