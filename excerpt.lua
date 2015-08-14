@@ -157,7 +157,7 @@ function excerpt_write_handler()
     t.args = {'mpv', srcname, '--term-status-msg='}
     table.insert(t.args, '--start=+' .. excerpt_begin)
     table.insert(t.args, '--end=+' .. excerpt_end)
-    table.insert(t.args, '--profile=' .. container)
+    table.insert(t.args, '--profile=' .. profile)
     table.insert(t.args, '--o=' .. fname)
     if (mp.get_property('edition') ~= nil) then
         table.insert(t.args, '--edition=' .. mp.get_property('edition'))
