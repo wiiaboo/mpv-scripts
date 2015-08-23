@@ -12,12 +12,21 @@
 -- MOUSE_BTN3 script_message_to zones commands "middle-right: add brightness  1" "*-left: add volume  5" "default: seek  10"
 -- MOUSE_BTN4 script_message_to zones commands "middle-right: add brightness -1" "*-left: add volume -5" "default: seek -10"
 --
---  #    Provide some free-text info which the script can display on hover[*]:
--- Z          script_message_to zones info "middle-right: wheel up/down to change brightness" "*-left: wheel up/down to change volume" "default: wheel to seek"
--- # [*] unfortunately, this info cannot be retrieved dynamically without a command to send it to the script
--- #    We can use zones to turn the hover-info on, though!
--- # e.g. right-click is pause, but let's use top-left to toggle hover-info:
--- MOUSE_BTN2 script_message_to zones commands "default: cycle pause" "top-left: keypress Z"
+--  # There's no way to get the info directly from each of the keys, so you can use:
+-- Ctrl+Alt+Z script_message_to zones info "middle-right: wheel up/down to change brightness" "*-left: wheel up/down to change volume" "default: wheel to seek"
+--  # to provide some free-text info which the script can display on hover.
+--  # We suggest this complicated key combination so it's not accidentaly pressed.
+--  # You can use a simpler input as shortcut:
+-- Z  keypress Ctrl+Alt+Z
+--  # Or even a zones command in the same way:
+--  # e.g. right-click is pause, but let's use top-left to toggle hover-info:
+-- MOUSE_BTN2 script_message_to zones commands "default: cycle pause" "top-left: keypress Ctrl+Alt+Z"
+--
+--  # You can change the two settings below to choose whether the info is shown by default and
+--  # which key combination contains the zones info.
+
+local _show_zones_info_by_default = true;
+local _zones_key = "Ctrl+Alt+Z"
 
 local ZONE_THRESH_PERCENTAGE = 20;
 -- -- sides get 20% each, mid gets 60%, same vertically
@@ -131,3 +140,7 @@ mp.register_script_message("info", function (...)
     local status = (timeoutId ~= nil) and "on" or "off"
     mp.osd_message("zones info: "..status)
 end)
+
+if _show_zones_info_by_default then
+    mp.command("keypress ".._zones_key)
+end
