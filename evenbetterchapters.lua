@@ -80,24 +80,34 @@ end
 function chapter_seek(direction)
     local chapters = mp.get_property_number("chapters")
     local chapter  = mp.get_property_number("chapter")
-    local isplaylist = mp.get_property_number('playlist-count') > 1
     if chapter == nil then chapter = 0 end
     if chapter+direction < 0 then
-        if isplaylist then
-            mp.command("playlist_prev")
-        else
-            find_and_open_file(-1)
-        end
+        playlist_seek(-1)
     elseif chapter+direction >= chapters then
-        if isplaylist then
-            mp.command("playlist_next")
-        else
-            find_and_open_file(1)
-        end
+        playlist_seek(1)
     else
         mp.commandv("osd-msg", "add", "chapter", direction)
     end
 end
 
+function playlist_seek(direction)
+    local isplaylist = mp.get_property_number('playlist-count') > 1
+    if direction < 0 then
+        if isplaylist then
+            mp.command("playlist_prev")
+        else
+            find_and_open_file(-1)
+        end
+    else
+        if isplaylist then
+            mp.command("playlist_next")
+        else
+            find_and_open_file(1)
+        end
+    end
+end
+
 mp.add_key_binding("PGUP", "chapter_next", function() chapter_seek(1) end)
 mp.add_key_binding("PGDWN", "chapter_prev", function() chapter_seek(-1) end)
+mp.add_key_binding("SHIFT+PGUP", "playlist_next", function() playlist_seek(1) end)
+mp.add_key_binding("SHIFT+PGDWN", "playlist_prev", function() playlist_seek(-1) end)
