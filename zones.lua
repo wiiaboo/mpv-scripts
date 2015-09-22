@@ -25,7 +25,7 @@
 --  # You can change the two settings below to choose whether the info is shown by default and
 --  # which key combination contains the zones info.
 
-local _show_zones_info_by_default = true;
+local _show_zones_info_by_default = false;
 local _zones_key = "Ctrl+Alt+Z"
 
 local ZONE_THRESH_PERCENTAGE = 20;
