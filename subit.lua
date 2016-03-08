@@ -34,8 +34,13 @@ function main()
         table.insert(t.args, "-l")
         table.insert(t.args, i)
     end
-    table.insert(t.args, mp.get_property("path"))
-    msg.debug("Running: " .. table.concat(t.args,' '))
+    local dir, file = string.match(mp.get_property("path"), "(.-)([^\\/]-[^%.]+)$")
+    if dir ~= nil then
+        table.insert(t.args, "-d")
+        table.insert(t.args, dir)
+    end
+    table.insert(t.args, file)
+    msg.verbose("Running: " .. table.concat(t.args,' '))
     local res = utils.subprocess(t)
     local es, txt = res.status, res.stdout
 
