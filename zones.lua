@@ -38,7 +38,7 @@ local msg = mp.msg
 function getMouseZone()
     -- returns the mouse zone as two strings [top/middle/bottom], [left/middle/right], e.g. "middle", "right"
 
-    local screenW, screenH = mp.get_osd_resolution()
+    local screenW, screenH = mp.get_osd_size()
     local mouseX, mouseY   = mp.get_mouse_pos()
 
     local threshY = screenH * ZONE_THRESH_PERCENTAGE / 100
