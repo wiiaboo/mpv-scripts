@@ -8,7 +8,7 @@
 --  If you only use one position, it'll only represent the middle slot of that position.
 --    ex: "top" == "top-middle", "right" == "middle-right", "middle" == "middle-middle"
 --  "default" will be the fallback command to be used if no command is assigned to that area.
---  "*-*" and "*" are synonyms for "default"
+--  "" (empty), "*-*" and "*" are synonyms for "default"
 --
 --  # input.conf example of use:
 --  #    wheel up/down with mouse
@@ -77,7 +77,7 @@ function getZonesData(list)
         else
             local pos, cmd = v:split()
             posY, posX = pos:split('-')
-            if posX == nil and posY ~= "default" and posY ~= "*" then
+            if posX == nil and posY ~= "default" and posY ~= "*" and posY ~= "" then
                 for _, x in pairs(HORZ) do
                     if posY == x and data['middle-'..x] == nil then
                         data['middle-'..x] = cmd
@@ -100,7 +100,7 @@ function getZonesData(list)
                         data[y..'-'..posX] = cmd
                     end
                 end
-            elseif posY == "default" or posY == "*" then
+            elseif posX == nil and (posY == "default" or posY == "*" or posY == "") then
                 data["default"] = cmd
             else
                 data[pos] = cmd
