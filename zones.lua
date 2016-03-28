@@ -5,17 +5,20 @@
 --
 --  Vertical positions can be top, middle, bottom or "*" to represent the whole column.
 --  Horizontal positions can be left, middle, bottom or "*" to represent the whole row.
+--  If you only use one position, it'll only represent the middle slot of that position.
+--    ex: "top" == "top-middle", "right" == "middle-right", "middle" == "middle-middle"
 --  "default" will be the fallback command to be used if no command is assigned to that area.
+--  "*-*" and "*" are synonyms for "default"
 --
 --  # input.conf example of use:
 --  #    wheel up/down with mouse
--- MOUSE_BTN3 script_message_to zones commands "middle-right: add brightness  1" "*-left: add volume  5" "default: seek  10"
--- MOUSE_BTN4 script_message_to zones commands "middle-right: add brightness -1" "*-left: add volume -5" "default: seek -10"
+-- MOUSE_BTN3 script_message_to zones commands "top-right: add brightness  1" "top: add contrast  1" "*-left: add volume  5" "default: seek  10"
+-- MOUSE_BTN4 script_message_to zones commands "top-right: add brightness -1" "top: add contrast -1" "*-left: add volume -5" "default: seek -10"
 --
 --  # There's no way to get the info directly from each of the keys, so you can use:
 -- Ctrl+Alt+Z script_message_to zones info "middle-right: wheel up/down to change brightness" "*-left: wheel up/down to change volume" "default: wheel to seek"
 --  # to provide some free-text info which the script can display on hover.
---  # We suggest this complicated key combination so it's not accidentaly pressed.
+--  # This complicated key combination is suggested so it's not accidentaly pressed.
 --  # You can use a simpler input as shortcut:
 -- Z  keypress Ctrl+Alt+Z
 --  # Or even a zones command in the same way:
@@ -69,12 +72,23 @@ function getZonesData(list)
         local sep = v:find(":")
         if sep < 1 or sep == nil then
             msg.warn("Invalid zone description: " .. v)
-            msg.warn("Expected: {default|{top|middle|bottom|*}-{left|middle|right|*}}: <command>")
+            msg.warn("Expected: {default|{top|middle|bottom|left|right|*}[-{left|middle|right|*}}]: <command>")
             msg.warn("E.g. \"default: seek 10\" or \"middle-right: add volume 5\"")
         else
             local pos, cmd = v:split()
             posY, posX = pos:split('-')
-            if posX == "*" and (posY ~= "*" or posY ~= "") then
+            if posX == nil and posY ~= "default" and posY ~= "*" then
+                for _, x in pairs(HORZ) do
+                    if posY == x and data['middle-'..x] == nil then
+                        data['middle-'..x] = cmd
+                    end
+                end
+                for _, y in pairs(VERT) do
+                    if posY == y and data[y..'-middle'] == nil then
+                        data[y..'-middle'] = cmd
+                    end
+                end
+            elseif posX == "*" and (posY ~= "*" or posY ~= "") then
                 for _, x in pairs(HORZ) do
                     if data[posY..'-'..x] == nil then
                         data[posY..'-'..x] = cmd
@@ -86,7 +100,7 @@ function getZonesData(list)
                         data[y..'-'..posX] = cmd
                     end
                 end
-            elseif posY == "default" or (posY == "*" and posX == "*") then
+            elseif posY == "default" or posY == "*" then
                 data["default"] = cmd
             else
                 data[pos] = cmd
