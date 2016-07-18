@@ -182,6 +182,9 @@ function flag()
             break
         end
     end
+    if not tile.is_covered then
+        tile.flag = FLAG_NONE
+    end
     force_render()
 end
 
@@ -209,11 +212,15 @@ function render()
 
     local canvas_w = 1280
     local canvas_h = 720
+    local dw, dh, da = mp.get_osd_size()
+    if dw ~= nil and dw > 0 and dh > 0 then
+        canvas_w = dw / dh * canvas_h
+    end
 
     local tile_wh = 32
 
     local o_x = canvas_w / 2 - tile_wh * W / 2
-    local o_y = canvas_h / 2 - tile_wh * H / 2
+    local o_y = canvas_h / 2 - tile_wh * (H + 2) / 2 + tile_wh
 
     local ass = assdraw.ass_new()
 
@@ -244,7 +251,7 @@ function render()
     local function draw_sym(x, y, sym, c)
         ass:new_event()
         ass:pos(x, y)
-        ass:append("{\\an5\\fs15\\bord0\\1c&H" .. c .. "&\\b1}" .. sym)
+        ass:append("{\\an5\\fs25\\bord0\\1c&H" .. c .. "&\\b1}" .. sym)
     end
 
     for x = 1, W do
@@ -252,7 +259,7 @@ function render()
             local tile = gField[x][y]
             local p_x = (x - 1) * tile_wh + tile_wh / 2 + o_x
             local p_y = (y - 1) * tile_wh + tile_wh / 2 + o_y
-            local wh = tile_wh - 2
+            local wh = tile_wh - 4
             local sym = nil
             if tile.is_covered then
                 ass:new_event()
@@ -269,7 +276,7 @@ function render()
                 draw_sym(p_x, p_y, tile.flag, "FF0000")
             end
             if x == gX and y == gY then
-                local wh = tile_wh - 10
+                local wh = tile_wh - 12
                 ass:new_event()
                 ass:append("{\\1a&HFF&}")
                 ass:pos(p_x, p_y)
@@ -289,19 +296,17 @@ function render()
     if banner then
         ass:new_event()
         ass:pos(o_x + tile_wh * W / 2, o_y - tile_wh - 10)
-        ass:append("{\\fs60\\b1\\an2}" .. banner)
+        ass:append("{\\fs40\\b1\\an2}" .. banner)
     end
 
-    local _, _, display_aspect = mp.get_osd_size()
-    if display_aspect == 0 or display_aspect == nil then
-        display_aspect = 1
-    end
-    mp.set_osd_ass(1280, 720, ass.text)
+    mp.set_osd_ass(canvas_w, canvas_h, ass.text)
 end
+
+mp.observe_property("osd-width", "native", force_render)
+mp.observe_property("osd-height", "native", force_render)
 
 init_field(gPreset)
 force_render()
-
 
 function toggle_show()
     if gHidden then
