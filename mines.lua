@@ -28,6 +28,7 @@ local gY = 0
 
 local gNeedRefresh = false
 local gHidden = true
+local gTransparent = false
 
 local PRESETS = {
     -- taken from kmines
@@ -35,9 +36,10 @@ local PRESETS = {
     { name = "medium",  w = 16, h = 16, mines = 40 },
     { name = "hard",    w = 30, h = 16, mines = 99 },
 }
-local gPreset = PRESETS[2]
+local gCurrentPreset = 2
 
-function init_field(preset)
+function init_field()
+    local preset = PRESETS[gCurrentPreset]
     gStatus = STATUS_PLAYING
     gField = {}
     W = preset.w
@@ -164,7 +166,7 @@ end
 
 function uncover()
     if gStatus ~= STATUS_PLAYING and not gField[gX][gY].is_covered then
-        init_field(gPreset)
+        init_field()
         render()
         return
     end
@@ -224,9 +226,17 @@ function render()
 
     local ass = assdraw.ass_new()
 
+    local transp = nil
+    if gTransparent then
+        transp = "{\\1a&HA0&\\3a&HA0&}"
+    end
+
     -- some shitty background
     ass:new_event()
     ass:append("{\\1c&Ha3a3a3&\\1a&H30&}")
+    if transp then
+        ass:append(transp)
+    end
     ass:pos(o_x - tile_wh, o_y - tile_wh)
     ass:draw_start()
     ass:rect_cw(0, 0, (W + 2) * tile_wh, (H + 2) * tile_wh)
@@ -234,6 +244,9 @@ function render()
     local function grid_line(x0, y0, x1, y1)
         ass:new_event()
         ass:append("{\\bord0.5}")
+        if transp then
+            ass:append(transp)
+        end
         ass:pos(x0, y0)
         ass:draw_start()
         ass:coord(0, 0)
@@ -263,6 +276,9 @@ function render()
             local sym = nil
             if tile.is_covered then
                 ass:new_event()
+                if transp then
+                    ass:append(transp)
+                end
                 ass:pos(p_x, p_y)
                 ass:draw_start()
                 ass:round_rect_cw(-wh / 2, -wh / 2, wh / 2, wh / 2, 5)
@@ -305,8 +321,19 @@ end
 mp.observe_property("osd-width", "native", force_render)
 mp.observe_property("osd-height", "native", force_render)
 
-init_field(gPreset)
+init_field()
 force_render()
+
+function toggle_transp()
+    gTransparent = not gTransparent
+    force_render()
+end
+
+function cycle_preset()
+    gCurrentPreset = (gCurrentPreset + 1 - 1) % #PRESETS + 1
+    init_field()
+    render()
+end
 
 function toggle_show()
     if gHidden then
@@ -317,8 +344,10 @@ function toggle_show()
         mp.add_forced_key_binding("right", "mines-right", function() move(1, 0) end, REP)
         mp.add_forced_key_binding("up", "mines-up", function() move(0, -1) end, REP)
         mp.add_forced_key_binding("down", "mines-down", function() move(0, 1) end, REP)
-        mp.add_forced_key_binding("space", "mines-uncover", function() uncover() end)
-        mp.add_forced_key_binding("b", "mines-flag", function() flag() end, REP)
+        mp.add_forced_key_binding("space", "mines-uncover", uncover)
+        mp.add_forced_key_binding("b", "mines-flag", flag)
+        mp.add_forced_key_binding("t", "mines-transp", toggle_transp)
+        mp.add_forced_key_binding("w", "mines-preset", cycle_preset)
     else
         gHidden = true
 
@@ -328,6 +357,8 @@ function toggle_show()
         mp.remove_key_binding("mines-down")
         mp.remove_key_binding("mines-uncover")
         mp.remove_key_binding("mines-flag")
+        mp.remove_key_binding("mines-transp")
+        mp.remove_key_binding("mines-preset")
     end
 
     force_render()
