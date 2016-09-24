@@ -8,10 +8,16 @@ This script queries the list of loaded config profiles, and checks the
 parses the string as Lua expression, and evaluates it. If the expression
 returns true, the profile is applied, if it returns false, it is ignored.
 
-Expressions can implicitly reference properties. If a variable does not already
-exist as Lua value, it is queried as mpv property. If the variable name contains
-any "_" characters, they are turned into "-". For example, "playback_time" would
-return the property "playback-time".
+Expressions can reference properties by accessing "p". For example, "p.pause"
+would return the current pause status. If the variable name contains any "_"
+characters, they are turned into "-". For example, "playback_time" would
+return the property "playback-time". (Although you can also just write
+p["playback-time"].)
+
+Note that if a property is not available, it will return nil, which can cause
+errors if used in expressions. These are printed and ignored, and the
+expression is considered to be false. You can also write e.g.
+get("playback-time", 0) instead of p.playback_time to default to 0.
 
 Whenever a property referenced by a profile condition changes, the condition
 is re-evaluated. If the return value of the condition changes from false or
@@ -20,17 +26,19 @@ error to true, the profile is applied.
 Note that profiles cannot be "unapplied", so you may have to define inverse
 profiles with inverse conditions do undo a profile.
 
+Using profile-desc is just a hack - maybe it will be changed later.
+
 Example profiles:
 
 # the profile names aren't used (except for logging), but must not clash with
 # other profiles
 [test]
-profile-desc=cond:playback_time>10
+profile-desc=cond:p.playback_time>10
 video-zoom=2
 
 # you would need this to actually "unapply" the "test" profile
 [test-revert]
-profile-desc=cond:playback_time<=10
+profile-desc=cond:p.playback_time<=10
 video-zoom=0
 
 --]]
@@ -58,17 +66,16 @@ local function evaluate(profile)
     if not status then
         -- errors can be "normal", e.g. in case properties are unavailable
         msg.info("Error evaluating: " .. res)
-        profile.status = false
+        res = false
     elseif type(res) ~= "boolean" then
         msg.error("Profile '" .. profile.name .. "' did not return a boolean.")
-        profile.status = false
-    else
-        if res ~= profile.status and res == true then
-            msg.info("Applying profile " .. profile.name)
-            mp.commandv("apply-profile", profile.name)
-        end
-        profile.status = res
+        res = false
     end
+    if res ~= profile.status and res == true then
+        msg.info("Applying profile " .. profile.name)
+        mp.commandv("apply-profile", profile.name)
+    end
+    profile.status = res
 end
 
 local function on_property_change(name, val)
@@ -135,8 +142,6 @@ local function compile_cond(name, s)
         msg.error("Profile '" .. name .. "' condition: " .. err)
         return function() return false end
     end
-    -- apply evil magic
-    setfenv(chunk, evil_magic)
     return chunk
 end
 
@@ -153,6 +158,18 @@ for i, v in ipairs(mp.get_property_native("profile-list")) do
         profiles[#profiles + 1] = profile
         dirty_profiles[profile] = true
     end
+end
+
+-- these definitions are for use by the condition expressions
+
+p = evil_magic
+
+function get(property_name, default)
+    local val = p[property_name]
+    if val == nil then
+        val = default
+    end
+    return val
 end
 
 -- re-evaluate all profiles immediately
