@@ -1,3 +1,9 @@
+auto-profiles.lua
+-----------------
+
+Automatically apply profiles based on predicates written as Lua expressions. See
+file header for details.
+
 mines.lua
 ---------
 
