@@ -1,3 +1,10 @@
+Introduction
+------------
+
+These are Lua scripts for use with mpv. See here how to use them:
+
+https://mpv.io/manual/master/#lua-scripting
+
 auto-profiles.lua
 -----------------
 
