@@ -50,7 +50,7 @@ local profiles = {}
 local watched_properties = {}   -- indexed by property name (used as a set)
 local cached_properties = {}    -- property name -> last known raw value
 local properties_to_profiles = {} -- property name -> set of profiles using it
-local dirty_profiles = {}        -- indexed by profile table (used as a set)
+local have_dirty_profiles = false -- at least one profile is marked dirty
 
 -- Used during evaluation of the profile condition, and should contain the
 -- profile the condition is evaluated for.
@@ -76,27 +76,33 @@ local function evaluate(profile)
         mp.commandv("apply-profile", profile.name)
     end
     profile.status = res
+    profile.dirty = false
 end
 
 local function on_property_change(name, val)
     cached_properties[name] = val
     -- Mark all profiles reading this property as dirty, so they get re-evaluated
     -- the next time the script goes back to sleep.
-    local profiles = properties_to_profiles[name]
-    if profiles then
-        for profile, _ in pairs(profiles) do
+    local dependent_profiles = properties_to_profiles[name]
+    if dependent_profiles then
+        for profile, _ in pairs(dependent_profiles) do
             assert(profile.cond) -- must be a profile table
-            dirty_profiles[profile] = true
+            profile.dirty = true
+            have_dirty_profiles = true
         end
     end
 end
 
 local function on_idle()
     -- When events and property notifications stop, re-evaluate all dirty profiles.
-    for profile, _ in pairs(dirty_profiles) do
-        dirty_profiles[profile] = nil
-        evaluate(profile)
+    if have_dirty_profiles then
+        for _, profile in ipairs(profiles) do
+            if profile.dirty then
+                evaluate(profile)
+            end
+        end
     end
+    have_dirty_profiles = false
 end
 
 mp.register_idle(on_idle)
@@ -156,7 +162,7 @@ for i, v in ipairs(mp.get_property_native("profile-list")) do
             dirty = true, -- need re-evaluate
         }
         profiles[#profiles + 1] = profile
-        dirty_profiles[profile] = true
+        have_dirty_profiles = true
     end
 end
 
