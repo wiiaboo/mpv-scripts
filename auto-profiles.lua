@@ -28,6 +28,10 @@ profiles with inverse conditions do undo a profile.
 
 Using profile-desc is just a hack - maybe it will be changed later.
 
+Supported --script-opts:
+
+    auto-profiles: if set to "no", the script exits immediately
+
 Example profiles:
 
 # the profile names aren't used (except for logging), but must not clash with
@@ -42,6 +46,11 @@ profile-desc=cond:p.playback_time<=10
 video-zoom=0
 
 --]]
+
+if mp.get_opt("auto-profiles") == "no" then
+    mp.keep_running = false
+    return
+end
 
 local utils = require 'mp.utils'
 local msg = require 'mp.msg'
