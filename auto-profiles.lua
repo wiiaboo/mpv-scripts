@@ -1,7 +1,7 @@
 --[[
 
 Automatically apply profiles based on runtime conditions.
-mpv 0.22.0 is required.
+At least mpv 0.21.0 is required.
 
 This script queries the list of loaded config profiles, and checks the
 "profile-desc" field of each profile. If it starts with "cond:", the script
