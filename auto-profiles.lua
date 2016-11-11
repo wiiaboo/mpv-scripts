@@ -30,7 +30,9 @@ Using profile-desc is just a hack - maybe it will be changed later.
 
 Supported --script-opts:
 
-    auto-profiles: if set to "no", the script exits immediately
+    auto-profiles: if set to "no", the script disables itself (but will still
+                   listen to property notifications etc. - if you set it to
+                   "yes" again, it will re-evaluate the current state)
 
 Example profiles:
 
@@ -46,11 +48,6 @@ profile-desc=cond:p.playback_time<=10
 video-zoom=0
 
 --]]
-
-if mp.get_opt("auto-profiles") == "no" then
-    mp.keep_running = false
-    return
-end
 
 local utils = require 'mp.utils'
 local msg = require 'mp.msg'
@@ -103,6 +100,10 @@ local function on_property_change(name, val)
 end
 
 local function on_idle()
+    if mp.get_opt("auto-profiles") == "no" then
+        return
+    end
+
     -- When events and property notifications stop, re-evaluate all dirty profiles.
     if have_dirty_profiles then
         for _, profile in ipairs(profiles) do
