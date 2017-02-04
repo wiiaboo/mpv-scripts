@@ -4,8 +4,8 @@ local utils = require 'mp.utils'
 local options = require 'mp.options'
 
 o = {
-    path = "subliminal",
-    languages = "en,pt"
+    path = "subliminal",    -- absolute path to subliminal if not on PATH
+    languages = "en,pt-PT", -- list of IETF languages to search
 }
 options.read_options(o)
 
@@ -29,8 +29,10 @@ end
 function main()
     mp.osd_message("looking for subs...", 100000)
     local t = {}
-    t.args = {o.path, "download"}
-    for i in string.gmatch(o.languages, "%a+") do
+    t.args = {o.path}
+
+    table.insert(t.args, "download")
+    for i in string.gmatch(o.languages, "[%a-_]+") do
         table.insert(t.args, "-l")
         table.insert(t.args, i)
     end
