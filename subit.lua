@@ -40,7 +40,7 @@ function main()
         table.insert(t.args, dir)
     end
     table.insert(t.args, file)
-    msg.verbose("Running: " .. table.concat(t.args,' '))
+    msg.verbose(string.format("Running: \"%s\"", table.concat(t.args,'" "')))
     local res = utils.subprocess(t)
     local es, txt = res.status, res.stdout
 
@@ -50,6 +50,7 @@ function main()
         end
         return
     end
+    msg.debug(txt)
 
     subs_found = parse_subliminal(txt)
 
