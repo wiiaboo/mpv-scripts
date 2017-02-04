@@ -66,24 +66,21 @@ local function secondsToTime(s, ms)
     return string.format(format, h, m, s)
 end
 
+function set_clipboard(text)
+    local res = utils.subprocess({ args = {
+        'powershell', '-NoProfile', '-Command', string.format([[& {
+            Trap {
+                Write-Error -ErrorRecord $_
+                Exit 1
+            }
+            Add-Type -AssemblyName PresentationCore
+            [System.Windows.Clipboard]::SetText('%s')
+        }]], text)
+    } })
+end
+
 local function announce_to_clipboard(timestamps, filename)
     msg.info(timestamps..filename)
-    if not (excerpt.clipboard_searched) then
-        if (package.config:sub(1,1) == '\\') then -- windows / nircmdc
-            local clipboard_mcd = mp.find_config_file('nircmdc.exe')
-            if not (clipboard_mcd == nil) then
-                table.insert(excerpt.announce_args, clipboard_mcd)
-                table.insert(excerpt.announce_args, 'clipboard')
-                table.insert(excerpt.announce_args, 'set')
-            else
-                o.announce = false
-                msg.debug("nircmdc.exe not found, no announce for you")
-            end
-        -- else
-            -- xclip code here
-        end
-        excerpt.clipboard_searched = true
-    end
     if not (o.announce or timestamps or filename) then
         return
     end
@@ -96,13 +93,8 @@ local function announce_to_clipboard(timestamps, filename)
         announce = string.format(o.baseurl .. filename)
     end
     if not (announce == "") then
-        local t = {args={}}
-        for i=1, #excerpt.announce_args do
-            table.insert(t.args, excerpt.announce_args[i])
-        end
-        table.insert(t.args, announce)
-        msg.info('Running: "'..table.concat(t.args, '" "')..'"')
-        utils.subprocess(t)
+        msg.info('Pasting: '..announce)
+        set_clipboard(announce)
     end
 end
 
