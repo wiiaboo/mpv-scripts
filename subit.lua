@@ -6,6 +6,8 @@ local options = require 'mp.options'
 o = {
     path = "subliminal",    -- absolute path to subliminal if not on PATH
     languages = "en,pt-PT", -- list of IETF languages to search
+    forceutf8 = true,       -- Force subtitles to be saved as utf-8
+
 }
 options.read_options(o)
 
@@ -36,11 +38,19 @@ function main()
         table.insert(t.args, "-l")
         table.insert(t.args, i)
     end
+
     local dir, file = string.match(mp.get_property("path"), "(.-)([^\\/]-[^%.]+)$")
     if dir ~= nil then
         table.insert(t.args, "-d")
         table.insert(t.args, dir)
     end
+
+    if o.forceutf8 then
+        -- force utf-8 encoding on the output subtitles
+        table.insert(t.args, "-e")
+        table.insert(t.args, "utf-8")
+    end
+
     table.insert(t.args, file)
     msg.verbose(string.format("Running: \"%s\"", table.concat(t.args,'" "')))
     local res = utils.subprocess(t)
