@@ -46,10 +46,10 @@ function main()
     t.args = {o.path}
 
     for _, i in ipairs({"addic7ed", "legendastv", "opensubtitles", "subscenter"}) do
-        if o[i] ~= "" then
+        if o[i] and o[i] ~= "" then
             local user, pass = string.match(o[i], "([^ :,|]+)[:,| ]([^ :,|]+)")
             if user ~= nil and pass ~= nil then
-                table.insert(t.args, "--"..o[i])
+                table.insert(t.args, "--"..i)
                 table.insert(t.args, user)
                 table.insert(t.args, pass)
             end
@@ -81,6 +81,7 @@ function main()
 
     if (es < 0) or (txt == nil) or (txt == "") then
         if not res.killed_by_us then
+            mp.osd_message("subliminal failed")
             msg.warn("subliminal failed")
         end
         return
