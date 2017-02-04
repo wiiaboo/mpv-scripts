@@ -27,7 +27,7 @@ function parse_subliminal(txt)
 end
 
 function main()
-    mp.osd_message("looking for subs...")
+    mp.osd_message("looking for subs...", 100000)
     local t = {}
     t.args = {o.path, "download"}
     for i in string.gmatch(o.languages, "%a+") do
