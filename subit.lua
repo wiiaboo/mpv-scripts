@@ -8,6 +8,13 @@ o = {
     languages = "en,pt-PT", -- list of IETF languages to search
     forceutf8 = true,       -- Force subtitles to be saved as utf-8
 
+    -- Providers that need credentials
+    -- split user/password with any of ": |,"
+    -- user/pass can't contain these
+    addic7ed = "",
+    legendastv = "",
+    opensubtitles = "",
+    subscenter = ""
 }
 options.read_options(o)
 
@@ -37,6 +44,17 @@ function main()
     mp.osd_message("looking for subs...", 100000)
     local t = {}
     t.args = {o.path}
+
+    for _, i in ipairs({"addic7ed", "legendastv", "opensubtitles", "subscenter"}) do
+        if o[i] ~= "" then
+            local user, pass = string.match(o[i], "([^ :,|]+)[:,| ]([^ :,|]+)")
+            if user ~= nil and pass ~= nil then
+                table.insert(t.args, "--"..o[i])
+                table.insert(t.args, user)
+                table.insert(t.args, pass)
+            end
+        end
+    end
 
     table.insert(t.args, "download")
     for i in string.gmatch(o.languages, "[%a-_]+") do
