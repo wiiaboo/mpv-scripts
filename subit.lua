@@ -29,6 +29,11 @@ function parse_subliminal(txt)
 end
 
 function main()
+    local path = mp.get_property("path")
+    if path:find("ytdl:") == 1 or path:find("http") == 1 then
+        return
+    end
+
     mp.osd_message("looking for subs...", 100000)
     local t = {}
     t.args = {o.path}
@@ -39,7 +44,7 @@ function main()
         table.insert(t.args, i)
     end
 
-    local dir, file = string.match(mp.get_property("path"), "(.-)([^\\/]-[^%.]+)$")
+    local dir, file = utils.split_path(path)
     if dir ~= nil then
         table.insert(t.args, "-d")
         table.insert(t.args, dir)
@@ -51,7 +56,7 @@ function main()
         table.insert(t.args, "utf-8")
     end
 
-    table.insert(t.args, file)
+    table.insert(t.args, path)
     msg.verbose(string.format("Running: \"%s\"", table.concat(t.args,'" "')))
     local res = utils.subprocess(t)
     local es, txt = res.status, res.stdout
