@@ -1,14 +1,29 @@
 -- input.conf: d    script-binding subit
+
+--[[
+Requirements:
+- Python 2/3, installed or embedded
+- subliminal (python script)
+- if Windows, python's Script in PATH or change 'path'
+  to absolute path of subliminal.exe
+
+Non-local files are ignored because mpv's --sub-path doesn't work
+for those.
+]]
+
+
 local msg = require 'mp.msg'
 local utils = require 'mp.utils'
 local options = require 'mp.options'
 
 o = {
+    key = "d",
     path = "subliminal",    -- absolute path to subliminal if not on PATH
     languages = "en,pt-PT", -- list of IETF languages to search
     forceutf8 = true,       -- Force subtitles to be saved as utf-8
 
-    -- Providers that need credentials
+    -- Some providers need credentials to be used.
+    -- This isn't necessary unless you want these providers.
     -- split user/password with any of ": |,"
     -- user/pass can't contain these
     addic7ed = "",
@@ -24,15 +39,21 @@ function parse_subliminal(txt)
     txt = txt:gsub("(Downloading subtitles)", '')
     txt = txt:gsub("(1 video collected / 0 video ignored / 0 error)", '')
     if txt:match("0 video collected / 1 video ignored / 0 error") then
-        mp.osd_message("Subtitles already in path")
+        mp.osd_message("Subtitles already in path/video")
         mp.commandv("rescan_external_files", "keep-selection")
         return
     end
+
     local subs_found = txt:match("Downloaded (%d+) subtitles?")
-    if subs_found ~= nil then
-        subs_found = tonumber(subs_found)
+
+    if subs_found == 0 or subs_found == nil then
+        mp.osd_message("No subtitles found")
+        msg.warn("No subtitles found")
+    else
+        mp.osd_message(string.format("Found %d subtitle%s",
+            subs_found, (subs_found == 1) and '' or 's'))
+        mp.commandv("rescan_external_files", "reselect")
     end
-    return subs_found
 end
 
 function main()
@@ -45,9 +66,11 @@ function main()
     local t = {}
     t.args = {o.path}
 
-    for _, i in ipairs({"addic7ed", "legendastv", "opensubtitles", "subscenter"}) do
+    for _, i in ipairs({"addic7ed", "legendastv",
+        "opensubtitles", "subscenter"}) do
         if o[i] and o[i] ~= "" then
-            local user, pass = string.match(o[i], "([^ :,|]+)[:,| ]([^ :,|]+)")
+            local user, pass =
+                string.match(o[i], "([^ :,|]+)[:,| ]([^ :,|]+)")
             if user ~= nil and pass ~= nil then
                 table.insert(t.args, "--"..i)
                 table.insert(t.args, user)
@@ -75,7 +98,7 @@ function main()
     end
 
     table.insert(t.args, path)
-    msg.verbose(string.format("Running: \"%s\"", table.concat(t.args,'" "')))
+    msg.debug(string.format("Running: \"%s\"", table.concat(t.args,'" "')))
     local res = utils.subprocess(t)
     local es, txt = res.status, res.stdout
 
@@ -88,15 +111,7 @@ function main()
     end
     msg.debug(txt)
 
-    subs_found = parse_subliminal(txt)
-
-    if subs_found == 0 or subs_found == nil then
-        mp.osd_message("No subtitles found")
-        msg.warn("No subtitles found")
-    else
-        mp.osd_message(string.format("Found %d subtitle%s", subs_found, (subs_found == 1) and '' or 's'))
-        mp.commandv("rescan_external_files", "reselect")
-    end
+    parse_subliminal(txt)
 end
 
-mp.add_key_binding("d", mp.get_script_name(), main)
+mp.add_key_binding(o.key, "subit", main)
