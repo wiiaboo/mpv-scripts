@@ -58,9 +58,6 @@ end
 
 function main()
     local path = mp.get_property("path")
-    if path:find("ytdl:") == 1 or path:find("http") == 1 then
-        return
-    end
 
     mp.osd_message("looking for subs...", 100000)
     local t = {}
@@ -88,7 +85,11 @@ function main()
     local dir, file = utils.split_path(path)
     if dir ~= nil then
         table.insert(t.args, "-d")
-        table.insert(t.args, dir)
+        if not (dir:find("ytdl:") == 1 or dir:find("http") == 1) then
+            table.insert(t.args, dir)
+        else
+            table.insert(t.args, mp.find_config_file("sub"))
+        end
     end
 
     if o.forceutf8 then
