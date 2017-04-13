@@ -11,6 +11,13 @@ auto-profiles.lua
 Automatically apply profiles based on predicates written as Lua expressions. See
 file header for details.
 
+fix-sub-timing.lua
+------------------
+
+Compute the correct speed/delay of subtitles by manually synching two points in
+time. Useful for subtitles that were e.g. timed against a PAL version of the
+video, or otherwise fucked up cases.
+
 mines.lua
 ---------
 
