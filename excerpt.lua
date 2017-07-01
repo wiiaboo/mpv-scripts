@@ -80,14 +80,18 @@ function set_clipboard(text)
 end
 
 local function announce_to_clipboard(timestamps, filename)
-    msg.info(timestamps..filename)
+    msg.info(timestamps..'\n'..filename)
     if not (o.announce or timestamps or filename) then
         return
     end
     local announce = ""
     if not (o.announce_format == "") then
-        announce = string.format(o.announce_format,
-                                 mp.get_property_osd('filename'),
+        local srcfname = mp.get_property_osd('filename')
+        local srcpath = mp.get_property_osd('path')
+        if (srcpath:find("://") ~= nil) then
+            srcfname = srcpath
+        end
+        announce = string.format(o.announce_format, srcfname,
                                  timestamps, o.baseurl, filename)
     elseif not (o.baseurl == "") then
         announce = string.format(o.baseurl .. filename)
@@ -107,14 +111,23 @@ end
 
 local function excerpt_rangeinfo()
     local message = excerpt_rangemessage()
-    mp.msg.log("info", message)
+    msg.info(message)
     mp.osd_message(message, 5)
 end
 
 local function get_fname(seed, format, default_name)
     local cwd, _ = utils.split_path(mp.get_property("path", '.'))
+    local home = nil
+    if os.getenv('HOMEDRIVE') then
+        home = string.format('%s%s', os.getenv('HOMEDRIVE'), os.getenv('HOMEPATH'))
+    elseif os.getenv('HOME') then
+        home = os.getenv('HOME')
+    else
+        home = '~'
+    end
+    msg.debug('home: '..home)
     if (cwd:find("://") ~= nil) then
-        cwd = os.getenv('HOME')
+        cwd = home
     end
     local path = ""
     local screenshot_dir = mp.get_property('screenshot-directory', '')
@@ -125,8 +138,8 @@ local function get_fname(seed, format, default_name)
     else
         path = cwd
     end
-    path = path:gsub('^(~)', os.getenv('HOME'))
-    msg.debug('cwd: '..cwd..' path: '..path)
+    path = path:gsub('^(~)', home)
+    msg.debug('cwd: '..cwd..' path: '..path..' screenshot-directory: '..screenshot_dir)
 
     local basename = (o.basename == "" and default_name or o.basename)
     local direntries = utils.readdir(path, "files")
@@ -184,9 +197,10 @@ local function excerpt_write_handler()
     
     local endfname = utils.join_path(path, fname)
 
-    local message = excerpt_rangemessage()
-    message = message .. "writing excerpt of source file '" .. srcname .. "'\n"
-    message = message .. "to destination file '" .. endfname .. "'"
+    local message = string.format("%s\n%s '%s'\n%s '%s'",
+        excerpt_rangemessage(),
+        "writing excerpt of source file", srcname,
+        "to destination file", endfname)
     msg.info(message)
     mp.osd_message(message, 10)
 
