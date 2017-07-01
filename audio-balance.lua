@@ -21,8 +21,19 @@
 
 --]]
 
-local left = 0.5
-local right = 0.5
+options = require 'mp.options'
+
+local opts = {
+    forcelayout = "",
+        -- if empty, will use the same layout as the original audio
+    left  = 0.5,
+    right = 0.5
+}
+
+options.read_options(opts)
+
+local left = opts.left
+local right = opts.right
 
 local function add_left_channel(left_ch_name, right_ch_name)
     return string.format("%s=%.1f*%s+%.1f*%s",
@@ -40,7 +51,9 @@ end
 
 local function update_filter()
     local graph = {}
-    local channels = mp.get_property('audio-params/hr-channels', 'stereo')
+    local channels =
+        opts.forcelayout ~= "" and opts.forcelayout or
+        mp.get_property('audio-params/hr-channels', 'stereo')
     if channels == "mono" then
         return
     end
@@ -88,6 +101,7 @@ local function update_filter()
         channels == "6.0" or
         channels == "hexagonal" or
         channels == "6.1" or
+        channels == "6.1(back)" or
         channels == "octagonal" then
         graph[#graph+1] = 'BC=BC'
     end
@@ -96,6 +110,7 @@ local function update_filter()
         channels == "5.0" or
         channels == "5.1" or
         channels == "hexagonal" or
+        channels == "6.1(back)" or
         channels == "7.0" or
         channels == "7.1" or
         channels == "7.1(wide)" or
