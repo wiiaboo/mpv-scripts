@@ -21,6 +21,7 @@ o = {
     path = "subliminal",    -- absolute path to subliminal if not on PATH
     languages = "en,pt-PT", -- list of IETF languages to search
     forceutf8 = true,       -- Force subtitles to be saved as utf-8
+    forcedownload = false,  -- Force download of all languages requested
 
     -- Some providers need credentials to be used.
     -- This isn't necessary unless you want these providers.
@@ -96,6 +97,12 @@ function main()
         -- force utf-8 encoding on the output subtitles
         table.insert(t.args, "-e")
         table.insert(t.args, "utf-8")
+    end
+
+    if o.forcedownload then
+        -- (if false, won't download English subs if subtitles
+        --  are already embedded in the container or present in the dir)
+        table.insert(t.args, "-f")
     end
 
     table.insert(t.args, path)
