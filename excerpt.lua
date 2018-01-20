@@ -222,7 +222,7 @@ local function excerpt_write_handler()
         table.insert(t.args, '--edition=' .. mp.get_property('edition'))
     end
     props = {'vid', 'aid', 'sid', 'mute', 'sub-visibility',
-             'sub-ass-style-override', 'audio-delay', 'sub-delay'}
+             'sub-ass-override', 'audio-delay', 'sub-delay'}
     for _, i in pairs(props) do
         table.insert(t.args, '--'..i..'='..mp.get_property(i))
     end

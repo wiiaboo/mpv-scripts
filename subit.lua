@@ -30,7 +30,6 @@ o = {
     addic7ed = "",
     legendastv = "",
     opensubtitles = "",
-    subscenter = ""
 }
 options.read_options(o)
 
